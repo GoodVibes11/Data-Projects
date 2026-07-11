@@ -1,0 +1,256 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+import numpy as np
+
+plt.rcParams['font.family'] = 'DejaVu Sans'
+
+# Palette
+NAVY = "#1F3864"
+GREEN = "#2E7D32"
+ORANGE = "#C77800"
+PURPLE = "#8E44AD"
+RED = "#B03A2E"
+TEAL = "#117A8B"
+GREY = "#6B6B6B"
+GOLD = "#B8860B"
+
+ai = pd.read_csv('/mnt/user-data/uploads/ai_chip_market.csv')
+fin = pd.read_csv('/mnt/user-data/uploads/chip_companies_financials.csv')
+prices = pd.read_csv('/mnt/user-data/uploads/chip_prices.csv')
+ec = pd.read_csv('/mnt/user-data/uploads/export_controls.csv')
+fab = pd.read_csv('/mnt/user-data/uploads/fab_capacity.csv')
+
+OUT = "/home/claude/chip_analysis/"
+
+# CHART 1: NVIDIA data-center GPU revenue by generation (stacked area)
+
+nvda = ai[ai.vendor == 'NVIDIA']
+piv = nvda.pivot_table(index='year', columns='chip_name', values='estimated_revenue_usd_m', aggfunc='sum', fill_value=0) / 1000  # to $bn
+order = ['NVIDIA V100', 'NVIDIA A100', 'NVIDIA H100', 'NVIDIA L40S', 'NVIDIA H200', 'NVIDIA B200', 'NVIDIA GB200', 'NVIDIA B300']
+piv = piv[[c for c in order if c in piv.columns]]
+
+fig, ax = plt.subplots(figsize=(10, 6))
+colors_chip = ["#9DB4CE", "#5C85B0", "#1F3864", "#2E7D32", "#C77800", "#B03A2E", "#8E44AD", "#B8860B"]
+ax.stackplot(piv.index, [piv[c] for c in piv.columns], labels=piv.columns, colors=colors_chip[:len(piv.columns)], alpha=0.92)
+ax.set_title("NVIDIA's AI Accelerator Wave: Revenue by Chip Generation (2020\u20132026)", fontsize=13.5, fontweight="bold", pad=14)
+ax.set_ylabel("Estimated revenue ($bn)", fontsize=10.5)
+ax.legend(loc="upper left", frameon=False, fontsize=8.5, ncol=2)
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(axis="y", linestyle="--", alpha=0.3)
+ax.axvspan(2025.5, 2026.5, color="grey", alpha=0.08)
+ax.text(2026, ax.get_ylim()[1]*0.05, "2026:\npartial\nyear", fontsize=8, ha="center", color=GREY, style="italic")
+ax.set_xlim(2020, 2026)
+plt.tight_layout()
+plt.savefig(OUT + "chart1_nvidia_revenue_wave.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 2: AI accelerator vendor market share, 2020 vs 2026
+
+mkt = ai.groupby(['year', 'vendor'])['estimated_revenue_usd_m'].sum().unstack(fill_value=0)
+share2020 = (mkt.loc[2020] / mkt.loc[2020].sum() * 100).sort_values(ascending=False)
+share2026 = (mkt.loc[2026] / mkt.loc[2026].sum() * 100).sort_values(ascending=False)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+vendors_order = share2026.index.tolist()
+y = np.arange(len(vendors_order))
+s2020 = [share2020.get(v, 0) for v in vendors_order]
+s2026 = [share2026.get(v, 0) for v in vendors_order]
+
+ax.barh(y + 0.19, s2020, height=0.36, color="#9DB4CE", label="2020")
+ax.barh(y - 0.19, s2026, height=0.36, color=NAVY, label="2026")
+ax.set_yticks(y)
+ax.set_yticklabels(vendors_order, fontsize=10)
+ax.invert_yaxis()
+ax.set_xlabel("Share of AI accelerator revenue (%)", fontsize=10.5)
+ax.set_title("AI Accelerator Market Share: NVIDIA's Grip Loosens, Slightly (2020 vs. 2026)", fontsize=12.7, fontweight="bold", pad=14)
+ax.legend(frameon=False, fontsize=10)
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(axis="x", linestyle="--", alpha=0.3)
+for i, v in enumerate(vendors_order):
+    if s2026[i] > 0.3:
+        ax.text(s2026[i] + 0.8, i - 0.19, f"{s2026[i]:.0f}%", va='center', fontsize=8.5, color=NAVY, fontweight='bold')
+plt.tight_layout()
+plt.savefig(OUT + "chart2_market_share.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 3: NVIDIA vs Intel revenue crossover (2010-2026)
+
+comp = fin[fin.company_name.isin(['NVIDIA', 'Intel'])].pivot_table(index='year', columns='company_name', values='revenue_usd_bn')
+fig, ax = plt.subplots(figsize=(10, 5.5))
+ax.plot(comp.index, comp['Intel'], marker='o', markersize=4, color=GREY, linewidth=2.2, label='Intel (total company revenue)')
+ax.plot(comp.index, comp['NVIDIA'], marker='o', markersize=4, color=GREEN, linewidth=2.2, label='NVIDIA (total company revenue)')
+ax.axvline(2023, color=RED, linestyle=":", linewidth=1.3, alpha=0.8)
+ax.annotate("2023: NVIDIA overtakes\nIntel in revenue", xy=(2023, 62), xytext=(2015.5, 190),
+            fontsize=9.5, color=RED, fontweight="bold",
+            arrowprops=dict(arrowstyle="->", color=RED, lw=1.2))
+ax.set_title("The Changing of the Guard: NVIDIA vs. Intel Revenue, 2010\u20132026", fontsize=13, fontweight="bold", pad=14)
+ax.set_ylabel("Revenue ($bn)", fontsize=10.5)
+ax.legend(loc="upper left", frameon=False, fontsize=10)
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(axis="y", linestyle="--", alpha=0.3)
+plt.tight_layout()
+plt.savefig(OUT + "chart3_nvidia_vs_intel.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 4: China semiconductor self-sufficiency vs export control timeline
+
+china_co = ['HiSilicon (Huawei)', 'SMIC', 'Yangtze Memory (YMTC)', 'ChangXin Memory (CXMT)', 'Hua Hong']
+cf = fin[fin.company_name.isin(china_co)].pivot_table(index='year', columns='company_name', values='revenue_usd_bn', fill_value=0)
+cf = cf[[c for c in china_co if c in cf.columns]]
+
+fig, ax = plt.subplots(figsize=(11, 6.2))
+colors_china = [RED, NAVY, GREEN, ORANGE, PURPLE]
+ax.stackplot(cf.index, [cf[c] for c in cf.columns], labels=cf.columns, colors=colors_china, alpha=0.9)
+
+# Annotate key Huawei export control events
+events = [
+    (2019.4, 'Huawei Entity\nList (May \'19)'),
+    (2020.4, 'FDPR Rule blocks\nTSMC\u2013Huawei (May \'20)'),
+    (2022.75, 'YMTC added to\nEntity List (Dec \'22)'),
+]
+for x, label in events:
+    ax.axvline(x, color=GREY, linestyle=":", linewidth=1.1, alpha=0.7)
+    ax.text(x, ax.get_ylim()[1] if False else 39, label, rotation=0, fontsize=7.6, ha='center', color=GREY, style='italic')
+
+ax.set_ylim(0, 42)
+ax.set_title("China's Chip Sector Under Sanctions: Sanctioned, Not Stopped", fontsize=13, fontweight="bold", pad=14)
+ax.set_ylabel("Combined revenue ($bn)", fontsize=10.5)
+ax.legend(loc="upper left", frameon=False, fontsize=9, ncol=2)
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(axis="y", linestyle="--", alpha=0.3)
+plt.tight_layout()
+plt.savefig(OUT + "chart4_china_selfsufficiency.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 5: Memory price cycles (DRAM & NAND, indexed) + HBM3 explosion
+
+dram = prices[prices['product'] == 'DRAM_DDR4_8Gb'].sort_values('year_month')
+nand = prices[prices['product'] == 'NAND_64Gb_MLC'].sort_values('year_month')
+hbm = prices[prices['product'] == 'HBM3_stack'].sort_values('year_month')
+
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 8), sharex=False)
+
+ax1.plot(range(len(dram)), dram['price'].values, color=NAVY, linewidth=1.8, label='DRAM DDR4 8Gb ($/chip)')
+ax1.plot(range(len(nand)), nand['price'].values, color=ORANGE, linewidth=1.8, label='NAND 64Gb MLC ($/chip)')
+xticks_idx = list(range(0, len(dram), 12))
+ax1.set_xticks(xticks_idx)
+ax1.set_xticklabels([dram['year_month'].values[i][:4] for i in xticks_idx])
+ax1.set_title("Commodity Memory: the Classic DRAM/NAND Boom-Bust Cycle (2014\u20132026)", fontsize=12.5, fontweight="bold", pad=12)
+ax1.set_ylabel("Price (USD/chip)", fontsize=10)
+ax1.legend(loc="upper right", frameon=False, fontsize=9.5)
+ax1.spines[["top", "right"]].set_visible(False)
+ax1.grid(axis="y", linestyle="--", alpha=0.3)
+ax1.axvspan(xticks_idx[dram['year_month'].str.startswith('2023').sum() and 0 or 0], len(dram)-1, alpha=0) # no-op keep clean
+
+ax2.plot(range(len(hbm)), hbm['price'].values, color=PURPLE, linewidth=2.2)
+ax2.fill_between(range(len(hbm)), hbm['price'].values, color=PURPLE, alpha=0.15)
+xticks_idx2 = list(range(0, len(hbm), 6))
+ax2.set_xticks(xticks_idx2)
+ax2.set_xticklabels([hbm['year_month'].values[i] for i in xticks_idx2], rotation=45, ha='right', fontsize=8)
+ax2.set_title("HBM3 Stack Price: the AI Memory Premium (2022\u20132026)", fontsize=12.5, fontweight="bold", pad=12)
+ax2.set_ylabel("Price (USD/stack)", fontsize=10)
+ax2.spines[["top", "right"]].set_visible(False)
+ax2.grid(axis="y", linestyle="--", alpha=0.3)
+ax2.text(len(hbm)-1, hbm['price'].values[-1], f"  +{(hbm['price'].values[-1]/hbm['price'].values[0]-1)*100:.0f}% since Jan 2022",
+         fontsize=9.5, color=PURPLE, fontweight="bold", va='center')
+
+plt.tight_layout()
+plt.savefig(OUT + "chart5_memory_cycles.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 6: AI GPU price decay - H100 and B200 since launch
+
+h100 = prices[prices['product'] == 'NVIDIA_H100'].sort_values('year_month')
+b200 = prices[prices['product'] == 'NVIDIA_B200'].sort_values('year_month')
+
+fig, ax = plt.subplots(figsize=(10.5, 5.8))
+ax.plot(range(len(h100)), h100['price'].values, color=GREEN, linewidth=2.2, label='NVIDIA H100 (launched Mar 2023)')
+ax.plot(range(len(b200)), b200['price'].values, color=RED, linewidth=2.2, label='NVIDIA B200 (launched Oct 2024)')
+ax.set_xlabel("Months since launch", fontsize=10.5)
+ax.set_ylabel("Street price (USD)", fontsize=10.5)
+ax.set_title("AI Accelerator Price Decay: Every Generation Gets Cheaper, Faster", fontsize=13, fontweight="bold", pad=14)
+h100_decline = (h100['price'].values[-1]/h100['price'].values[0]-1)*100
+b200_decline = (b200['price'].values[-1]/b200['price'].values[0]-1)*100
+ax.text(len(h100)-1, h100['price'].values[-1]-1200, f"{h100_decline:.0f}% over {len(h100)} months", color=GREEN, fontsize=9.5, fontweight="bold", ha='right')
+ax.text(len(b200)-1, b200['price'].values[-1]-1200, f"{b200_decline:.0f}% over {len(b200)} months", color=RED, fontsize=9.5, fontweight="bold", ha='right')
+ax.legend(loc="upper right", frameon=False, fontsize=10)
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(axis="y", linestyle="--", alpha=0.3)
+plt.tight_layout()
+plt.savefig(OUT + "chart6_gpu_price_decay.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 7: Leading-edge (<=5nm) fab capacity by country over time
+
+leading = fab[(fab.fab_type == 'logic_leading') & (fab.process_node_nm <= 5)]
+by_country = leading.groupby(['year', 'country_iso3'])['monthly_wafer_capacity'].sum().unstack(fill_value=0)
+by_country = by_country[by_country.sum().sort_values(ascending=False).index]
+
+fig, ax = plt.subplots(figsize=(10, 5.8))
+colors_geo = {"TWN": NAVY, "KOR": ORANGE, "USA": GREEN}
+bottom = np.zeros(len(by_country))
+for c in by_country.columns:
+    ax.bar(by_country.index, by_country[c], bottom=bottom, label=c, color=colors_geo.get(c, GREY), width=0.6)
+    bottom += by_country[c].values
+
+ax2 = ax.twinx()
+twn_share = (by_country.get('TWN', 0) / by_country.sum(axis=1) * 100)
+ax2.plot(twn_share.index, twn_share.values, color=RED, marker='o', markersize=5, linewidth=2, label="Taiwan share (%)")
+ax2.set_ylabel("Taiwan share of leading-edge capacity (%)", color=RED, fontsize=10)
+ax2.tick_params(axis='y', labelcolor=RED)
+ax2.set_ylim(0, 100)
+
+ax.set_title("Leading-Edge (\u22645nm) Wafer Capacity: Geography & the Taiwan Concentration", fontsize=12.5, fontweight="bold", pad=14)
+ax.set_ylabel("Monthly wafer capacity (wafers/month)", fontsize=10.5)
+ax.legend(loc="upper left", frameon=False, fontsize=9.5)
+ax.spines["top"].set_visible(False)
+ax2.spines["top"].set_visible(False)
+ax.grid(axis="y", linestyle="--", alpha=0.3)
+plt.tight_layout()
+plt.savefig(OUT + "chart7_fab_capacity_geo.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+
+# CHART 8: R&D vs Capex intensity bubble chart (2026, top companies)
+
+latest = fin[fin.year == 2026].copy()
+latest['rd_intensity'] = latest.rd_spend_usd_bn / latest.revenue_usd_bn * 100
+latest['capex_intensity'] = latest.capex_usd_bn / latest.revenue_usd_bn * 100
+top = latest.sort_values('revenue_usd_bn', ascending=False).head(16)
+
+seg_colors = {
+    'fabless_gpu': GREEN, 'fabless_cpu_gpu': GREEN, 'fabless_mobile': TEAL, 'fabless_diversified': TEAL,
+    'foundry': NAVY, 'idm_memory': ORANGE, 'idm_cpu': GREY, 'equipment_litho': PURPLE,
+    'equipment_diversified': PURPLE, 'equipment_etch': PURPLE, 'idm_analog': GOLD,
+}
+
+fig, ax = plt.subplots(figsize=(11, 7.5))
+seen_coords = {}
+for _, row in top.iterrows():
+    c = seg_colors.get(row['segment'], GREY)
+    ax.scatter(row['rd_intensity'], row['capex_intensity'], s=row['revenue_usd_bn']*7, color=c, alpha=0.65, edgecolor='white', linewidth=1.2)
+    key = (round(row['rd_intensity'], 1), round(row['capex_intensity'], 1))
+    n = seen_coords.get(key, 0)
+    seen_coords[key] = n + 1
+    yoff = 5 + n * 13
+    ax.annotate(row['company_name'], (row['rd_intensity'], row['capex_intensity']), xytext=(8, yoff), textcoords='offset points', fontsize=8.7, fontweight='bold', color='#222222')
+
+ax.set_xlabel("R&D spend as % of revenue", fontsize=10.5)
+ax.set_ylabel("Capex spend as % of revenue", fontsize=10.5)
+ax.set_title("Capital Intensity Map, 2026: Bubble size = revenue", fontsize=13, fontweight="bold", pad=14)
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(linestyle="--", alpha=0.3)
+ax.text(0.98, 0.02, "Foundries & memory IDMs: capex-heavy\nFabless design houses: R&D-heavy, capex-light",
+        transform=ax.transAxes, fontsize=8.5, color=GREY, style='italic', ha='right', va='bottom')
+plt.tight_layout()
+plt.savefig(OUT + "chart8_capital_intensity.png", dpi=200, bbox_inches="tight")
+plt.close()
+
+print("All 8 charts generated successfully.")
