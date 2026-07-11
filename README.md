@@ -27,11 +27,13 @@ I compiled three World Bank World Development Indicators for Nigeria and three p
 
 The chart below shows all three indicators side by side. Nigeria has the **highest** renewable energy share of the four countries — and the **lowest** access to clean cooking fuels.
 
-![Bar chart comparing renewable share, electricity access, and clean cooking access across Nigeria, Kenya, Ghana, and South Africa](chart_bars.png)
+<img width="1780" height="1072" alt="image" src="https://github.com/user-attachments/assets/25258b66-cbea-41a9-9f18-832e1e9bcffc" />
+
 
 That's not a contradiction — it's a definitional artifact. The World Bank's "renewable energy consumption" indicator counts **traditional biomass** (firewood, charcoal, crop waste burned for cooking) as renewable. In Nigeria, biomass dominates household energy use precisely *because* modern, clean alternatives — LPG, electricity, biogas — haven't reached most of the population. South Africa shows the mirror image: a fossil-fuel-heavy, coal-based national grid gives it the *lowest* "renewable" score of the four, but the *highest* access to clean cooking fuels and electricity, because its energy system is modern and grid-delivered rather than biomass-based.
 
-![Scatter plot showing the inverse relationship between renewable energy share and clean cooking access](chart_scatter.png)
+<img width="1480" height="1178" alt="image" src="https://github.com/user-attachments/assets/992719d7-0038-4e14-a9de-bd40aca22384" />
+
 
 Kenya and Ghana sit in between, and in a genuinely interesting way: Kenya's higher renewable share is increasingly driven by real investment in geothermal, wind, and hydropower generation (not just biomass), while Ghana's lower renewable share reflects a more gas-dependent grid with comparatively better electrification.
 
