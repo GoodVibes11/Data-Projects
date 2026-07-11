@@ -12,7 +12,8 @@ The approach mirrors how I'd scope a market or competitive-intelligence brief: s
 
 NVIDIA's data-center GPU revenue (as reconstructed from shipment volumes and ASPs across its V100 → B300 product line) grew from **$573M in 2020 to a peak of $87.8bn in 2025** — a 153x increase in five years. The wave is generational, not linear: each new chip (H100, then H200/B200, then GB200) launches into a market that immediately cannibalizes the prior generation rather than adding to it in parallel.
 
-![NVIDIA's AI accelerator revenue by chip generation, 2020-2026](chart1_nvidia_revenue_wave.png)
+<img width="1977" height="1178" alt="image" src="https://github.com/user-attachments/assets/e5694ad5-f8a8-4b65-accd-4f1b1abf64a7" />
+
 
 **A note on the 2026 dip:** the chart shows revenue falling to $57.4bn in 2026. I want to be upfront that I don't read this as an actual demand collapse — the underlying data only has chip launches and shipment records through mid-2026 (consistent with today's date), so 2026 is a partial year, not a completed one. Taking a partial-year figure at face value and calling it "the AI bubble bursting" would be exactly the kind of analytical error I'd want to catch before it reached a client or a trading desk.
 
@@ -20,13 +21,17 @@ NVIDIA's data-center GPU revenue (as reconstructed from shipment volumes and ASP
 
 **Market concentration is real, but eroding slightly.** NVIDIA held 95% of tracked AI accelerator revenue in 2020. By 2026 that's down to 81% — still dominant, but AMD (5%), Google's TPU program (5%), and a longer tail of Huawei, Cerebras, AWS Trainium/Inferentia, and Groq now collectively represent a fifth of the market.
 
-![AI accelerator vendor market share, 2020 vs 2026](chart2_market_share.png)
+<img width="1978" height="1176" alt="image" src="https://github.com/user-attachments/assets/a58e0366-bcdd-46cc-a20e-ccee35ccdfcb" />
+
+
 
 ## 2. The changing of the guard: NVIDIA overtakes Intel
 
 Using each company's *total* reported revenue (not just AI-chip revenue), NVIDIA passed Intel for the first time in company history in **2023** — $62.1bn vs. $53.9bn — and the gap has since become a chasm: by 2026 NVIDIA's $250.7bn in revenue is more than 4x Intel's $59.8bn. Intel's revenue has been essentially flat for a decade (a 1.9% CAGR from 2010–2026, against TSMC's 14.3% and NVIDIA's ~30%+ over the AI era), while its operating margin sits at 12.5% in 2026 — the weakest of any major company in this dataset.
 
-![NVIDIA vs Intel revenue crossover, 2010-2026](chart3_nvidia_vs_intel.png)
+<img width="1978" height="1078" alt="image" src="https://github.com/user-attachments/assets/49a55e50-9fa6-461f-bb7f-531c1e5f4461" />
+
+
 
 This isn't just a chip story, it's a strategic-positioning story: Intel bet on being an integrated device manufacturer (design + fab) at exactly the moment the industry rewarded specialization — TSMC in pure-play manufacturing, NVIDIA in pure-play design. Both of Intel's more focused competitors grew revenue roughly 7–15x faster.
 
@@ -38,7 +43,9 @@ This is the most consequential finding in the dataset. Overlaying the 34-entry e
 2. **2020–2022: the collapse.** The May 2020 Foreign Direct Product Rule — which barred TSMC from manufacturing any chip designed by a US-sanctioned entity — cut off HiSilicon's only path to leading-edge fabrication. Its revenue fell 82% in two years, from $10.7bn (2020) to $1.97bn (2022).
 3. **2023–2026: the recovery.** HiSilicon didn't just stabilize — it **fully recovered and then exceeded its pre-sanctions peak**, reaching $11.5bn in 2026 (+8% above 2020), powered by SMIC's success in reaching 7nm-class production domestically (via multi-patterning DUV lithography, since ASML's EUV tools remain export-restricted) and Huawei's Mate 60 relaunch.
 
-![China's chip sector under sanctions](chart4_china_selfsufficiency.png)
+
+<img width="2178" height="1219" alt="image" src="https://github.com/user-attachments/assets/28d178e7-ecaa-4d25-8612-b0b7029ead18" />
+
 
 The combined revenue of the five tracked Chinese chip companies (HiSilicon, SMIC, YMTC, CXMT, Hua Hong) grew from **$18.3bn in 2020 to $41.4bn in 2026** — up 126% *despite* being the direct target of 26 separate US export-control actions over that period (average severity 7.4/10 under the Biden administration alone).
 
@@ -48,19 +55,27 @@ The combined revenue of the five tracked Chinese chip companies (HiSilicon, SMIC
 
 DRAM and NAND remain the semiconductor industry's most classically cyclical products. DDR4 8Gb DRAM ran from **$1.38/chip (trough, Aug 2023) to $8.43/chip (peak, Jul 2018)** — a 6.1x swing — and the annual average price has moved by more than 20% year-on-year in 9 of the last 12 years.
 
-![DRAM/NAND commodity cycles and HBM3 pricing](chart5_memory_cycles.png)
+<img width="2176" height="1579" alt="image" src="https://github.com/user-attachments/assets/00c13b30-dd04-4425-9251-8c05ebc9c286" />
+
+
 
 The more interesting story is **HBM3** (the high-bandwidth memory that sits inside every AI accelerator): its price has risen from **$188/stack (Jan 2022) to $841/stack (Apr 2026), up 346%**, moving in the opposite direction from commodity DRAM over the same window. This is the clearest evidence in the dataset that AI demand has created a structural, not cyclical, repricing of advanced memory — and it explains why Samsung Memory and SK Hynix both show meaningfully improved profitability through 2024–2025 despite commodity DRAM/NAND being range-bound.
 
 **AI accelerators depreciate in price fast, and faster with each generation.** H100 street pricing fell 43% over its first 38 months on the market (from ~$34,200 to ~$19,300); B200, launched 19 months later, has already fallen 28% in its first 19 months — a steeper initial decline than H100 saw over the same window. For any buyer, this argues strongly against long-lead-time bulk purchasing at launch pricing; for any seller, it argues for aggressive, front-loaded revenue recognition before the next generation cannibalizes the current one.
 
-![AI GPU price decay since launch](chart6_gpu_price_decay.png)
+
+<img width="2079" height="1137" alt="image" src="https://github.com/user-attachments/assets/a72e0db5-4658-49fc-882f-bb37ec5d2fd5" />
+
+
 
 ## 5. The Taiwan concentration risk — real, but being actively diversified
 
 At the leading edge (≤5nm logic), Taiwan's share of global capacity has fallen from **64.7% in 2021 to 49.9% in 2026** — not because Taiwan is producing less (TSMC's leading-edge capacity has grown 5.7x over that window), but because Korea (Samsung) and, since 2025, the United States (TSMC Arizona) have been adding capacity faster off a smaller base.
 
-![Leading-edge fab capacity by geography](chart7_fab_capacity_geo.png)
+
+<img width="1979" height="1139" alt="image" src="https://github.com/user-attachments/assets/ee33614b-1554-45ae-a36b-e43bbc511a2f" />
+
+
 
 This matters for anyone doing supply-chain risk assessment: the often-repeated "90% of advanced chips come from one earthquake-and-conflict-exposed island" framing is becoming dated. It was closer to true in 2021; by 2026 the concentration is meaningfully — if not yet fully — diversified, with real US capacity (108,922 wafers/month) coming online for the first time in the dataset's history.
 
@@ -68,7 +83,10 @@ This matters for anyone doing supply-chain risk assessment: the often-repeated "
 
 Plotting R&D spend and capex, both as a share of revenue, against company segment produces a clean structural picture: **foundries and memory IDMs are capex-heavy** (TSMC and Samsung Foundry spend ~45% of revenue on capex; the memory majors spend ~35%), while **fabless design houses are R&D-heavy and capex-light** (NVIDIA spends 25% of revenue on R&D but only 2% on capex — it owns no fabs).
 
-![Capital intensity map, 2026](chart8_capital_intensity.png)
+
+<img width="2163" height="1477" alt="image" src="https://github.com/user-attachments/assets/5b0d2170-903a-43da-9d07-17314c8761d2" />
+
+
 
 Intel is the outlier that stands out immediately on this chart: it carries foundry-level capex intensity (25% of revenue) *and* a middling R&D intensity (20%), without earning foundry-level margins (its 12.5% operating margin is roughly a third of TSMC's 37.6%) or fabless-level margins (NVIDIA's 61.9%). Structurally, Intel is paying the capital cost of a foundry and the R&D cost of a chip designer, while capturing the returns of neither — a direct, data-grounded explanation for why the company's 2024 decision to formally split IDM (design) and Foundry (manufacturing) operations makes strategic sense.
 
